@@ -90,10 +90,10 @@
     .demo-step.blocked .step-status{color:#c22b3f}
 
     .demo-log-box{background:var(--bg-panel);border:1px solid var(--bdr);border-radius:10px;padding:20px 22px;min-height:110px;box-shadow:var(--shadow)}
-    .demo-log-inner{font-size:17px;line-height:1.6;max-height:none;display:flex;flex-direction:column;gap:12px}
+    .demo-log-inner{font-size:17px;line-height:1.6;max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;scroll-behavior:smooth}
     .log-line{display:flex;gap:12px;line-height:1.6;animation:fadeInLog .35s ease}
-    .log-line.prior{opacity:.4;font-size:14px}
-    .log-line.current{font-size:19px}
+    .log-line.prior{opacity:.55}
+    .log-line.current{font-size:19px;font-weight:500}
     @keyframes fadeInLog{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
     .log-msg{color:var(--t2);font-size:17px}
     .log-msg.nemoclaw{color:#6d28d9;font-weight:500}
@@ -104,9 +104,9 @@
     .log-msg.blocked{color:#c22b3f;font-weight:600}
 
     /* ── THEATER: single place, no scrolling required during demo ── */
-    .theater-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;align-items:stretch}
-    .theater-log{display:flex;flex-direction:column;min-height:280px}
-    .theater-log .demo-log-inner{max-height:none;flex:1}
+    .theater-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;align-items:start}
+    .theater-log{display:flex;flex-direction:column}
+    .theater-log .demo-log-inner{max-height:420px;overflow-y:auto}
     .theater-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t4);margin-bottom:10px}
     .theater-side{display:flex;flex-direction:column;gap:12px}
     .theater-mini{background:var(--bg-panel);border:1px solid var(--bdr);border-radius:10px;padding:14px 16px;transition:border-color .3s,box-shadow .3s;flex:1;display:flex;flex-direction:column;justify-content:center;box-shadow:var(--shadow)}
@@ -675,15 +675,16 @@ function toast(msg, type='success') {
 
 function dlog(msg, cls='') {
   const box = document.getElementById('demo-log');
-  // Keep it to the current line + the previous one (faded) so it reads like
-  // a calm progression, not a scrolling terminal wall of text.
+  // Keep every message on screen so people can read at their own pace —
+  // just fade the previous "current" line and mark the new one, then
+  // gently auto-scroll the box (not the page) to the newest message.
   const prev = box.querySelector('.log-line.current');
   if(prev){ prev.classList.remove('current'); prev.classList.add('prior'); }
-  box.querySelectorAll('.log-line.prior').forEach((el,i)=>{ if(i>0) el.remove(); });
   const d = document.createElement('div');
   d.className='log-line current';
   d.innerHTML=`<div class="log-msg ${cls}">${esc(msg)}</div>`;
   box.appendChild(d);
+  box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
 }
 
 function setStep(i, state) {
@@ -794,9 +795,9 @@ async function runDemo() {
   const p=DEMO_PATIENTS[Math.floor(Math.random()*DEMO_PATIENTS.length)];
   dlog(`A new patient is checking in. Let's walk through what happens.`,'step');
   document.querySelector('.demo-section').scrollIntoView({behavior:'smooth',block:'start'});
-  await sleep(1400);
+  await sleep(2400);
   dlog(`Today's patient: ${p.name}, requesting a ${p.visit.replace(/\s*\(\$\d+\)/,'').toLowerCase()}.`,'step');
-  await sleep(1600);
+  await sleep(2600);
 
   // STEP 1 — Compliance / safety check (technical detail kept small, in the mini-panel only)
   setStep(0,'active');
@@ -804,23 +805,23 @@ async function runDemo() {
   flashGate('evaluating');
   document.getElementById('mini-security-body').innerHTML='<span class="mini-empty">⏳ Reviewing this request…</span>';
   dlog(`Before anything happens, Hermes checks this request against the clinic's safety policy.`, 'nemoclaw');
-  await sleep(2200);
+  await sleep(3200);
   flashGate('approved');
   dlog(`Cleared. This is a routine, in-policy action — Hermes may proceed.`, 'nemoclaw');
   document.getElementById('mini-security').className='theater-mini confirmed';
   document.getElementById('mini-security-body').innerHTML=`
     <div class="mini-row"><span class="mini-check">✓</span> Policy check passed</div>
     <div class="mini-row"><span class="mini-check">✓</span> Network access limited to Stripe only</div>`;
-  await sleep(1600);
+  await sleep(2600);
   setStep(0,'done');
-  await sleep(700);
+  await sleep(1200);
 
   // STEP 2 — Patient registered (with retry so a transient network hiccup isn't reported as failure)
   setStep(1,'active');
   document.getElementById('mini-patient').className='theater-mini live';
   document.getElementById('mini-patient-body').innerHTML='<span class="mini-empty">⏳ Opening a new chart…</span>';
   dlog(`Hermes opens a new chart for ${p.name} in the clinic's patient system.`, 'db');
-  await sleep(1800);
+  await sleep(2800);
   let dbOk=false, demoOnly=false;
   for(let attempt=0; attempt<2 && !dbOk; attempt++){
     try {
@@ -835,7 +836,7 @@ async function runDemo() {
       if(attempt===0) await sleep(500); // brief pause before one retry
     }
   }
-  await sleep(900);
+  await sleep(1400);
   if(dbOk && demoOnly) {
     dlog(`On this hosted demo, patient charts are shown as static sample data — the full read/write version runs on the local backend.`, 'db');
     document.getElementById('mini-patient').className='theater-mini confirmed';
@@ -858,14 +859,14 @@ async function runDemo() {
     toast('Start backend: python3 clinic-maker.py','error');
     return;
   }
-  await sleep(1100);
+  await sleep(1800);
 
   // STEP 3 — Billing initiated
   setStep(2,'active');
   document.getElementById('mini-receipt').className='theater-mini live';
   document.getElementById('mini-receipt-body').innerHTML='<span class="mini-empty">⏳ Preparing the invoice…</span>';
   dlog(`Now Hermes sends the bill for this visit to Stripe — this is a real payment request, not a demo mock-up.`, 'stripe');
-  await sleep(2000);
+  await sleep(3000);
   let stripeUrl=null, stripeId=null;
   for(let attempt=0; attempt<2 && !stripeId; attempt++){
     try {
@@ -879,7 +880,7 @@ async function runDemo() {
       if(attempt===0) await sleep(500);
     }
   }
-  await sleep(1100);
+  await sleep(1800);
   if(stripeId) {
     dlog(`Stripe confirmed the charge and generated a real invoice.`, 'stripe');
     setStep(2,'done');
@@ -888,14 +889,14 @@ async function runDemo() {
     document.getElementById('mini-receipt-body').innerHTML='<span class="mini-empty">⚠ Invoice failed</span>';
     setStep(2,'blocked');
   }
-  await sleep(1000);
+  await sleep(1800);
 
   // STEP 4 — Invoice ready
   setStep(3,'active');
   if(stripeUrl) {
     const price=(p.visit.match(/\$(\d+)/)||['','?'])[1];
     dlog(`The patient's invoice is ready — anyone can open the link and see a real, working payment page.`, 'stripe');
-    await sleep(1800);
+    await sleep(2800);
     dlog(`Payment page confirmed live. This is exactly what ${p.name} would see to pay their $${price} bill.`, 'stripe');
     document.getElementById('mini-receipt').className='theater-mini confirmed';
     document.getElementById('mini-receipt-body').innerHTML=`
@@ -904,20 +905,20 @@ async function runDemo() {
       <div class="mini-id">${esc(stripeId)}</div>
       <a href="${esc(stripeUrl)}" target="_blank" rel="noopener" class="mini-link">Open the real payment page →</a>`;
     addReceipt(stripeId, p.name, p.visit, stripeUrl);
-    await sleep(1400);
+    await sleep(2200);
     setStep(3,'done');
   } else {
     dlog(`Invoice unavailable — see the panel to the right for details.`, 'blocked');
     setStep(3,'blocked');
   }
-  await sleep(900);
+  await sleep(1600);
 
   // STEP 5 — Visit confirmed
   setStep(4,'active');
   dlog(`Last step — updating the patient queue so you can see this visit reflected there.`, 'ok');
-  await sleep(1200);
+  await sleep(2000);
   await loadQueue();
-  await sleep(900);
+  await sleep(1400);
   dlog(`Done. One real patient, one real invoice — handled entirely by Hermes, no human wrote any code for this.`, 'ok');
   setStep(4,'done');
 
@@ -926,7 +927,7 @@ async function runDemo() {
   toast(`Visit complete — ${p.name} registered, real invoice created`,'success');
 
   if(stripeUrl) {
-    await sleep(1000);
+    await sleep(1500);
     openModal(p.name, p.visit, stripeUrl, stripeId);
   }
 }
