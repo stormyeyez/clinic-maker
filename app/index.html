@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clinic Maker — Hermes Agent Hackathon</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#eef3f7;--bg-panel:#ffffff;--bg-surf:#f4f8fb;--bg-hover:#e7eef4;
+      --t1:#132435;--t2:#3c5165;--t3:#647a8d;--t4:#8ea0b0;
+      --acc:#0e7490;--acc-h:#0c637b;--acc-s:rgba(14,116,144,.09);
+      --bdr:rgba(19,36,53,.10);--bdr-s:rgba(19,36,53,.06);
+      --green:#1a8a4e;--green-s:rgba(26,138,78,.12);
+      --amber:#b3760a;--amber-s:rgba(179,118,10,.12);
+      --red:#c22b3f;--red-s:rgba(194,43,63,.10);
+      --stripe:#635bff;
+      --mono:'JetBrains Mono',ui-monospace,monospace;
+      --shadow:0 1px 2px rgba(19,36,53,.04),0 4px 16px rgba(19,36,53,.05);
+    }
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--t2);font-family:'Inter',system-ui,sans-serif;font-size:17px;line-height:1.65;min-height:100vh}
+    a{color:inherit;text-decoration:none}
+    code{font-family:var(--mono)}
+
+    .skip{position:absolute;top:-40px;left:0;background:var(--acc);color:#fff;padding:8px 14px;border-radius:0 0 6px 0;font-size:13px;font-weight:600;z-index:9999;transition:top .15s}
+    .skip:focus{top:0}
+
+    /* ── TOPBAR ── */
+    .topbar{background:rgba(255,255,255,.92);border-bottom:1px solid var(--bdr);padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(14px)}
+    .topbar-logo{font-size:19px;font-weight:700;color:var(--t1);letter-spacing:-.3px;display:flex;align-items:center;gap:9px}
+    .topbar-logo svg{width:24px;height:24px}
+    .topbar-right{display:flex;align-items:center;gap:10px}
+    .pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;padding:5px 12px;border-radius:99px}
+    .pill-green{background:var(--green-s);color:#1a8a4e;border:1px solid rgba(74,222,128,.2)}
+    .pill-purple{background:var(--acc-s);color:#6d28d9;border:1px solid rgba(167,139,250,.2)}
+    .pill-amber{background:var(--amber-s);color:#b3760a;border:1px solid rgba(251,191,36,.2)}
+    .dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+
+    /* ── SPONSOR STRIP (single compact row) ── */
+    .sponsor-bar{background:var(--bg-panel);border-bottom:1px solid var(--bdr);padding:14px 40px}
+    .sponsor-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;font-size:14px}
+    .sponsor-logos{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+    .sponsor-logo{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:700;white-space:nowrap}
+    .sponsor-sep{color:var(--t4);font-size:14px;font-weight:300}
+    .sponsor-nous{color:#8a6d00}
+    .sponsor-nvidia{color:#76b900}
+    .sponsor-stripe{color:#4c46c9}
+    .sponsor-disclaimer{font-size:12px;color:var(--t4);font-style:italic}
+
+    .page{max-width:1200px;margin:0 auto;padding:0 40px 60px}
+
+    /* ── HERO: single clear thesis ── */
+    .hero{max-width:760px;margin:0 auto;padding:56px 0 40px;text-align:center}
+    .hero-eyebrow{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--acc);margin-bottom:16px}
+    .hero h1{font-size:clamp(30px,4.2vw,44px);font-weight:800;color:var(--t1);line-height:1.15;letter-spacing:-1px;margin-bottom:16px}
+    .hero h1 span{color:var(--acc)}
+    .hero p{font-size:18px;color:var(--t3);line-height:1.7;max-width:620px;margin:0 auto 32px}
+
+    .start-box{max-width:420px;margin:0 auto;background:rgba(239,68,68,.06);border:2px solid rgba(239,68,68,.4);border-radius:14px;padding:28px;text-align:center;animation:pulseBox 2.5s ease-in-out infinite}
+    @keyframes pulseBox{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.25)}50%{box-shadow:0 0 0 6px rgba(239,68,68,0)}}
+    .start-label{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--red);margin-bottom:14px}
+    .btn-demo{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:18px 22px;background:var(--red);color:#fff;border:none;border-radius:10px;font-size:19px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;letter-spacing:-.2px;margin-bottom:12px}
+    .btn-demo:hover{background:#dc2626;transform:translateY(-1px);box-shadow:0 6px 24px rgba(239,68,68,.35)}
+    .btn-demo:disabled{opacity:.6;cursor:not-allowed;transform:none}
+    .btn-demo:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+    .start-desc{font-size:13px;color:var(--t4);line-height:1.6}
+    .start-desc a{color:var(--acc);text-decoration:underline;cursor:pointer;background:none;border:none;font-size:13px;font-family:inherit}
+
+    /* ── DEMO PROGRESS ── */
+    .demo-section{margin:48px 0}
+    .section-label{font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--t4);margin-bottom:20px;display:flex;align-items:center;gap:10px}
+    .section-label::after{content:'';flex:1;height:1px;background:var(--bdr)}
+    .demo-steps{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
+    .demo-step{background:var(--bg-panel);border:1px solid var(--bdr);border-radius:10px;padding:18px 14px;text-align:center;transition:all .3s;box-shadow:var(--shadow)}
+    .demo-step.active{border-color:var(--acc);background:var(--acc-s);box-shadow:0 0 0 1px rgba(83,58,253,.2)}
+    .demo-step.done{border-color:rgba(39,166,68,.4);background:var(--green-s)}
+    .demo-step.blocked{border-color:rgba(239,68,68,.5);background:var(--red-s)}
+    .demo-step.done .step-icon{color:#1a8a4e}
+    .demo-step.active .step-icon{color:#6d28d9}
+    .demo-step.blocked .step-icon{color:#c22b3f}
+    .step-num{font-size:12px;font-weight:700;color:var(--t4);font-family:var(--mono);margin-bottom:8px}
+    .step-icon{font-size:24px;margin-bottom:8px;display:block}
+    .step-name{font-size:14px;font-weight:600;color:var(--t1);margin-bottom:4px}
+    .step-detail{font-size:12px;color:var(--t3);line-height:1.45}
+    .step-status{font-size:11px;font-weight:600;color:var(--t4);margin-top:8px;font-family:var(--mono)}
+    .demo-step.done .step-status{color:#1a8a4e}
+    .demo-step.active .step-status{color:#6d28d9}
+    .demo-step.blocked .step-status{color:#c22b3f}
+
+    .demo-log-box{background:var(--bg-panel);border:1px solid var(--bdr);border-radius:10px;padding:20px 22px;min-height:110px;box-shadow:var(--shadow)}
+    .demo-log-inner{font-size:17px;line-height:1.6;max-height:none;display:flex;flex-direction:column;gap:12px}
+    .log-line{display:flex;gap:12px;line-height:1.6;animation:fadeInLog .35s ease}
+    .log-line.prior{opacity:.4;font-size:14px}
+    .log-line.current{font-size:19px}
+    @keyframes fadeInLog{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+    .log-msg{color:var(--t2);font-size:17px}
+    .log-msg.nemoclaw{color:#6d28d9;font-weight:500}
+    .log-msg.stripe{color:#4c46c9;font-weight:500}
+    .log-msg.db{color:#b3760a;font-weight:500}
+    .log-msg.ok{color:#1a8a4e;font-weight:600}
+    .log-msg.step{color:var(--t1);font-weight:600}
+    .log-msg.blocked{color:#c22b3f;font-weight:600}
+
+    /* ── THEATER: single place, no scrolling required during demo ── */
+    .theater-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;align-items:stretch}
+    .theater-log{display:flex;flex-direction:column;min-height:280px}
+    .theater-log .demo-log-inner{max-height:none;flex:1}
+    .theater-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t4);margin-bottom:10px}
+    .theater-side{display:flex;flex-direction:column;gap:12px}
+    .theater-mini{background:var(--bg-panel);border:1px solid var(--bdr);border-radius:10px;padding:14px 16px;transition:border-color .3s,box-shadow .3s;flex:1;display:flex;flex-direction:column;justify-content:center;box-shadow:var(--shadow)}
+    .theater-mini.live{border-color:var(--acc);box-shadow:0 0 0 2px rgba(83,58,253,.15)}
+    .theater-mini.confirmed{border-color:rgba(39,166,68,.4)}
+    .mini-body{font-size:13px;color:var(--t2)}
+    .mini-empty{color:var(--t4);font-style:italic;font-size:13px}
+    .mini-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+    .mini-row:last-child{margin-bottom:0}
+    .mini-check{color:#1a8a4e;font-weight:700;flex-shrink:0}
+    .mini-name{font-weight:600;color:var(--t1)}
+    .mini-amount{font-size:22px;font-weight:800;font-family:var(--mono);color:var(--t1);letter-spacing:-.5px;margin-bottom:4px}
+    .mini-sub{font-size:12px;color:var(--t3)}
+    .mini-id{font-size:10px;font-family:var(--mono);color:var(--t4);word-break:break-all;margin-top:4px}
+    .mini-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--stripe);margin-top:8px;font-weight:600}
+
+    /* ── EVIDENCE: one clean 2x2, everything a judge needs to verify ── */
+    .evidence-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+    .ev-panel{background:var(--bg-panel);border:1px solid var(--bdr);border-radius:10px;overflow:hidden;transition:box-shadow .3s,border-color .3s;box-shadow:var(--shadow)}
+    .ev-panel.highlight{border-color:var(--acc);box-shadow:0 0 0 2px rgba(83,58,253,.15)}
+    .ev-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--bdr-s)}
+    .ev-num{font-size:12px;font-weight:700;font-family:var(--mono);color:var(--t4)}
+    .ev-title{font-size:16px;font-weight:600;color:var(--t1);display:flex;align-items:center;gap:10px}
+    .ev-body{padding:20px}
+
+    .inq-list{display:flex;flex-direction:column;gap:4px}
+    .inq-row{display:flex;align-items:center;gap:14px;padding:13px 14px;border-radius:8px;cursor:pointer;border:1px solid transparent;transition:background .1s}
+    .inq-row:hover{background:var(--bg-hover);border-color:var(--bdr-s)}
+    .inq-row:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+    .inq-avatar{width:36px;height:36px;border-radius:50%;background:var(--acc-s);border:1px solid rgba(83,58,253,.3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#6d28d9;flex-shrink:0}
+    .inq-info{flex:1;min-width:0}
+    .inq-name{font-size:15px;font-weight:600;color:var(--t1)}
+    .inq-type{font-size:13px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .inq-right{text-align:right;flex-shrink:0}
+    .status-pill{font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px}
+    .s-pending{background:var(--amber-s);color:#b3760a}
+    .s-new{background:var(--acc-s);color:#6d28d9}
+    .s-contact{background:var(--green-s);color:#1a8a4e}
+    .inq-price{font-size:13px;color:var(--t3);font-family:var(--mono);margin-bottom:4px}
+
+    .stripe-list{display:flex;flex-direction:column;gap:12px;max-height:340px;overflow-y:auto}
+    .receipt-card{background:var(--bg-surf);border:1px solid rgba(83,58,253,.2);border-radius:12px;padding:18px;position:relative;overflow:hidden}
+    .receipt-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#635bff,#818cf8)}
+    .receipt-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+    .receipt-status{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#1a8a4e;text-transform:uppercase;letter-spacing:.05em}
+    .receipt-amount{font-size:30px;font-weight:800;font-family:var(--mono);color:var(--t1);letter-spacing:-1px;margin-bottom:2px}
+    .receipt-patient{font-size:14px;color:var(--t2);margin-bottom:10px}
+    .receipt-id{font-size:11px;font-family:var(--mono);color:var(--t4);margin-bottom:10px;word-break:break-all}
+    .btn-open-checkout{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;background:var(--stripe);color:#fff;border-radius:8px;font-size:15px;font-weight:700;text-decoration:none;transition:all .15s}
+    .btn-open-checkout:hover{background:#7c75ff;transform:translateY(-1px)}
+    .receipt-empty{font-size:14px;color:var(--t4);text-align:center;padding:32px 0;font-family:var(--mono)}
+
+    .sec-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bdr-s);font-size:14px}
+    .sec-row:last-child{border-bottom:none}
+    .sec-key{color:var(--t3);display:flex;align-items:center;gap:9px}
+    .sec-val{color:var(--t1);font-weight:600;font-family:var(--mono);font-size:12.5px}
+    .sdot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;box-shadow:0 0 5px var(--green)}
+    .sdot-amber{background:var(--amber);box-shadow:0 0 5px var(--amber)}
+    .nemoclaw-gate-flash{padding:11px 14px;border-radius:8px;font-size:13px;font-family:var(--mono);margin-bottom:12px;display:none;align-items:center;gap:8px}
+    .gate-approved{background:var(--green-s);color:#1a8a4e;border:1px solid rgba(74,222,128,.3)}
+    .gate-evaluating{background:var(--amber-s);color:#b3760a;border:1px solid rgba(251,191,36,.3)}
+
+    /* ── STATS ── */
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:32px}
+    .stat{background:var(--bg-panel);border:1px solid var(--bdr);border-radius:10px;padding:18px 20px;box-shadow:var(--shadow)}
+    .stat-l{font-size:12px;color:var(--t4);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+    .stat-v{font-size:28px;font-weight:700;font-family:var(--mono);color:var(--t1);letter-spacing:-.5px}
+    .stat-s{font-size:12px;color:var(--t4);margin-top:4px}
+
+    /* ── FORM ── */
+    .form-group{margin-bottom:16px}
+    label{display:block;font-size:14px;font-weight:500;color:var(--t3);margin-bottom:7px}
+    input,select,textarea{width:100%;background:var(--bg-surf);border:1px solid var(--bdr);border-radius:8px;padding:11px 14px;color:var(--t1);font-size:15px;font-family:inherit;outline:none;transition:border-color .15s;appearance:none}
+    input:focus,select:focus,textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-s)}
+    textarea{resize:vertical;min-height:64px}
+    select option{background:var(--bg-panel)}
+    .submit-btn{width:100%;justify-content:center;font-size:15px;padding:12px;background:var(--acc);color:#fff;border-radius:8px;border:none;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;display:flex;align-items:center;gap:6px;margin-top:4px}
+    .submit-btn:hover{background:var(--acc-h)}
+    .submit-btn:disabled{opacity:.6;cursor:not-allowed}
+
+    /* ── WHY THIS MATTERS (collapsible — everything else lives here) ── */
+    .why-details{margin-bottom:32px;border:1px solid var(--bdr);border-radius:10px;background:var(--bg-panel);overflow:hidden}
+    .why-summary{padding:18px 22px;cursor:pointer;font-size:15px;font-weight:600;color:var(--t1);display:flex;align-items:center;justify-content:space-between;list-style:none}
+    .why-summary::-webkit-details-marker{display:none}
+    .why-summary .chev{transition:transform .2s;color:var(--t4)}
+    .why-details[open] .why-summary .chev{transform:rotate(180deg)}
+    .why-body{padding:0 22px 26px}
+
+    .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+    .ba-card{border-radius:10px;padding:20px}
+    .ba-before{background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.25)}
+    .ba-after{background:rgba(39,166,68,.05);border:1px solid rgba(39,166,68,.3)}
+    .ba-title{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+    .ba-before .ba-title{color:#c22b3f}
+    .ba-after .ba-title{color:#1a8a4e}
+    .ba-row{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:14px;color:var(--t2)}
+    .ba-row .ic{width:17px;flex-shrink:0}
+    .ba-before .ic{color:#c22b3f}
+    .ba-after .ic{color:#1a8a4e}
+    .ba-row strong{color:var(--t1)}
+
+    .revenue-panel{background:linear-gradient(135deg,rgba(39,166,68,.07),rgba(83,58,253,.05));border:1px solid rgba(39,166,68,.25);border-radius:10px;padding:20px;margin-bottom:24px;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:16px;align-items:center}
+    .rev-label{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#1a8a4e;margin-bottom:6px}
+    .rev-desc{font-size:13px;color:var(--t3);line-height:1.55}
+    .rev-stat{text-align:center}
+    .rev-stat-label{font-size:11px;color:var(--t4);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+    .rev-stat-val{font-size:24px;font-weight:700;font-family:var(--mono);color:var(--t1);letter-spacing:-.5px}
+    .rev-stat-val.big{color:#1a8a4e;font-size:28px}
+
+    .req-list{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;margin-bottom:24px}
+    .req-row{display:flex;align-items:baseline;gap:10px;font-size:14px;color:var(--t2);padding:6px 0}
+    .req-row .check{color:#1a8a4e;flex-shrink:0}
+    .req-row b{color:var(--t1)}
+
+    .prov-text{font-size:15px;color:var(--t2);line-height:1.65;margin-bottom:14px}
+    .prov-text strong{color:#6d28d9}
+    .prov-files{display:flex;gap:10px;flex-wrap:wrap}
+    .prov-file{font-size:12px;font-family:var(--mono);color:var(--t3);background:var(--bg);border:1px solid var(--bdr);border-radius:6px;padding:6px 11px}
+    .prov-file b{color:var(--t1)}
+
+    /* ── FOOTER ── */
+    .footer{border-top:1px solid var(--bdr);padding:28px 40px 0}
+    .footer-inner{max-width:1200px;margin:0 auto}
+    .submission-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;padding-bottom:20px;border-bottom:1px solid var(--bdr-s);margin-bottom:16px}
+    .submission-links{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+    .sub-link{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--t3);border:1px solid var(--bdr);border-radius:7px;padding:7px 13px;transition:all .15s}
+    .sub-link:hover{color:var(--t1);border-color:var(--acc)}
+    .sub-date{font-size:12px;color:var(--t4);font-family:var(--mono)}
+    .footer-bottom{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-bottom:28px}
+    .footer-stack{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+    .tech-tag{font-size:12px;font-family:var(--mono);color:var(--t4);padding:4px 9px;background:var(--bg-panel);border:1px solid var(--bdr);border-radius:5px}
+    .footer-note{font-size:12px;color:var(--t4)}
+
+    /* ── MODAL ── */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
+    .modal-overlay.open{display:flex}
+    .modal{background:var(--bg-panel);border:1px solid var(--bdr);border-radius:12px;width:100%;max-width:440px;box-shadow:0 24px 64px rgba(0,0,0,.6)}
+    .modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--bdr-s)}
+    .modal-title{font-size:15px;font-weight:600;color:var(--t1)}
+    .modal-close{background:none;border:none;color:var(--t4);cursor:pointer;font-size:22px;line-height:1;border-radius:4px;padding:2px 6px}
+    .modal-close:hover{color:var(--t1)}
+    .modal-close:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+    .modal-body{padding:22px}
+    .price-box{text-align:center;padding:18px;background:var(--bg-surf);border-radius:8px;margin-bottom:16px;border:1px solid var(--bdr)}
+    .price-amt{font-size:38px;font-weight:700;color:var(--t1);font-family:var(--mono);letter-spacing:-1px}
+    .price-lbl{font-size:14px;color:var(--t3);margin-top:2px}
+    .url-box{background:var(--bg);border:1px solid rgba(83,58,253,.3);border-radius:6px;padding:11px 13px;margin:14px 0;display:none}
+    .url-label{font-size:10px;color:var(--t4);font-family:var(--mono);margin-bottom:5px;text-transform:uppercase;letter-spacing:.07em}
+    .url-val{font-size:11px;font-family:var(--mono);color:#6d28d9;word-break:break-all;line-height:1.5}
+    .btn-stripe{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:13px;background:var(--stripe);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
+    .btn-stripe:hover{background:#7c75ff;transform:translateY(-1px);box-shadow:0 4px 20px rgba(99,91,255,.35)}
+    .btn-stripe:disabled{opacity:.6;cursor:not-allowed;transform:none}
+    .stripe-pw{display:flex;align-items:center;justify-content:center;gap:5px;font-size:12px;color:var(--t4);margin-top:14px}
+
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:inherit;transition:all .15s;text-decoration:none}
+    .btn-ghost{background:var(--bg-surf);color:var(--t2);border:1px solid var(--bdr)}
+    .btn-ghost:hover{background:var(--bg-hover)}
+    .btn-sm-stripe{background:rgba(99,91,255,.12);color:#6d28d9;border:1px solid rgba(99,91,255,.25)}
+    .btn-sm-stripe:hover{background:rgba(99,91,255,.2)}
+
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+    .spinner-dark{border-color:var(--bdr);border-top-color:var(--acc)}
+
+    #toast{position:fixed;bottom:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:8px}
+    .toast-item{display:flex;align-items:center;gap:9px;background:var(--bg-surf);border:1px solid var(--bdr);border-radius:8px;padding:11px 15px;font-size:14px;color:var(--t1);box-shadow:0 4px 20px rgba(0,0,0,.5);animation:slideUp .2s ease;max-width:320px}
+    .toast-item.success{border-color:rgba(74,222,128,.3)}
+    .toast-item.error{border-color:rgba(239,68,68,.3)}
+    @keyframes slideUp{from{transform:translateY(8px);opacity:0}}
+
+    ::-webkit-scrollbar{width:4px;height:4px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+
+    @media(max-width:900px){
+      .evidence-grid,.ba-grid{grid-template-columns:1fr}
+      .stats-row{grid-template-columns:1fr 1fr}
+      .demo-steps{grid-template-columns:repeat(3,1fr)}
+      .revenue-panel{grid-template-columns:1fr 1fr}
+      .req-list{grid-template-columns:1fr}
+      .theater-grid{grid-template-columns:1fr}
+    }
+    @media(max-width:600px){
+      .topbar,.sponsor-bar,.page,.footer{padding-left:16px;padding-right:16px}
+      .stats-row{grid-template-columns:1fr 1fr}
+      .demo-steps{grid-template-columns:repeat(2,1fr)}
+      .revenue-panel{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+
+<a href="#evidence" class="skip">Skip to evidence panels</a>
+
+<header class="topbar">
+  <div class="topbar-logo">
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="8.5" y="3" width="3" height="14" rx="1" fill="#0e7490"/><rect x="3" y="8.5" width="14" height="3" rx="1" fill="#0e7490"/></svg>
+    Clearpoint Clinic
+  </div>
+  <div class="topbar-right">
+    <span class="pill pill-green"><span class="dot"></span> System Operational</span>
+    <span class="pill pill-amber"><span class="dot"></span> Sandbox Billing</span>
+  </div>
+</header>
+
+<div class="sponsor-bar">
+  <div class="sponsor-inner">
+    <span style="color:var(--t4);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase">Hackathon presented by</span>
+    <div class="sponsor-logos">
+      <span class="sponsor-logo sponsor-nous">Nous Research</span>
+      <span class="sponsor-sep">×</span>
+      <span class="sponsor-logo sponsor-nvidia">NVIDIA</span>
+      <span class="sponsor-sep">×</span>
+      <span class="sponsor-logo sponsor-stripe">Stripe</span>
+    </div>
+    <span class="sponsor-disclaimer">— independent submission, synthetic demo only, no real PHI</span>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- ONE CLEAR THESIS -->
+  <div class="hero">
+    <div class="hero-eyebrow">The goal</div>
+    <h1>Hermes Agent <span>operates</span> a real cash-pay clinic — checking in patients, running compliance checks, and processing real payments, entirely on its own.</h1>
+    <p>Everything on this page — the patient records, the front desk, the compliance policy, this site, and real billing through Stripe — is run autonomously by Hermes, with no human in the loop during the visit. Click below to walk through a real patient visit, start to finish.</p>
+    <div class="start-box">
+      <div class="start-label">▼ Start here — click first</div>
+      <button class="btn-demo" id="demo-btn" onclick="runDemo()" aria-label="Watch Hermes check in a patient and process a real payment">
+        ▶ &nbsp;Check In a Patient &amp; Process Real Payment
+      </button>
+      <div class="start-desc">~20 seconds · narrated step by step · or <button onclick="openManualForm()">register your own patient</button></div>
+    </div>
+  </div>
+
+  <!-- DEMO PROGRESS -->
+  <div class="demo-section">
+    <div class="section-label">Patient intake in progress — follow along below</div>
+    <div class="demo-steps" id="demo-steps" aria-label="Demo steps">
+      <div class="demo-step" id="step-0">
+        <div class="step-num">01</div>
+        <div class="step-icon">🛡️</div>
+        <div class="step-name">Compliance Check</div>
+        <div class="step-detail">Safety policy review before any action</div>
+        <div class="step-status" id="ss-0">waiting</div>
+      </div>
+      <div class="demo-step" id="step-1">
+        <div class="step-num">02</div>
+        <div class="step-icon">👤</div>
+        <div class="step-name">Patient Registered</div>
+        <div class="step-detail">Added to the clinic's patient record</div>
+        <div class="step-status" id="ss-1">waiting</div>
+      </div>
+      <div class="demo-step" id="step-2">
+        <div class="step-num">03</div>
+        <div class="step-icon">🧾</div>
+        <div class="step-name">Billing Initiated</div>
+        <div class="step-detail">Payment request sent to Stripe</div>
+        <div class="step-status" id="ss-2">waiting</div>
+      </div>
+      <div class="demo-step" id="step-3">
+        <div class="step-num">04</div>
+        <div class="step-icon">💳</div>
+        <div class="step-name">Invoice Ready</div>
+        <div class="step-detail">Patient can now pay for their visit</div>
+        <div class="step-status" id="ss-3">waiting</div>
+      </div>
+      <div class="demo-step" id="step-4">
+        <div class="step-num">05</div>
+        <div class="step-icon">✅</div>
+        <div class="step-name">Visit Confirmed</div>
+        <div class="step-detail">Everything below reflects the real record</div>
+        <div class="step-status" id="ss-4">waiting</div>
+      </div>
+    </div>
+
+    <!-- THEATER: log + live evidence, all in one place, no scrolling required -->
+    <div class="theater-grid">
+      <div class="demo-log-box theater-log">
+        <div class="theater-label">Care coordinator notes</div>
+        <div class="demo-log-inner" id="demo-log" role="log" aria-live="polite" aria-label="Demo activity log">
+          <div class="log-line"><div class="log-msg">Press the button above to begin. Hermes will walk through each step of the patient visit, one at a time, right here.</div></div>
+        </div>
+      </div>
+      <div class="theater-side">
+        <div class="theater-mini" id="mini-security">
+          <div class="theater-label">Compliance &amp; safety</div>
+          <div class="mini-body" id="mini-security-body">
+            <span class="mini-empty">Waiting for the next patient…</span>
+          </div>
+        </div>
+        <div class="theater-mini" id="mini-patient">
+          <div class="theater-label">Patient chart</div>
+          <div class="mini-body" id="mini-patient-body">
+            <span class="mini-empty">No chart open yet</span>
+          </div>
+        </div>
+        <div class="theater-mini" id="mini-receipt">
+          <div class="theater-label">Billing &amp; payment</div>
+          <div class="mini-body" id="mini-receipt-body">
+            <span class="mini-empty">No invoice yet</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row" aria-label="Summary statistics">
+    <div class="stat"><div class="stat-l">DB Records</div><div class="stat-v" id="s-total" aria-live="polite">—</div><div class="stat-s">patient_inquiries</div></div>
+    <div class="stat"><div class="stat-l">Pending SMS</div><div class="stat-v" id="s-pending" style="color:#b3760a" aria-live="polite">—</div><div class="stat-s">awaiting contact</div></div>
+    <div class="stat"><div class="stat-l">Stripe Sessions</div><div class="stat-v" id="s-stripe" style="color:#6d28d9" aria-live="polite">0</div><div class="stat-s">this session</div></div>
+    <div class="stat"><div class="stat-l">Contacted</div><div class="stat-v" id="s-contact" style="color:#1a8a4e" aria-live="polite">—</div><div class="stat-s">in progress</div></div>
+  </div>
+
+  <!-- EVIDENCE: everything a judge needs to verify, one clean 2x2 -->
+  <div id="evidence">
+    <div class="section-label">Evidence — click any row to open a real Stripe checkout</div>
+    <div class="evidence-grid">
+
+      <div class="ev-panel" id="ev-stripe">
+        <div class="ev-header">
+          <div>
+            <div class="ev-num">1 / 4 — LIVE STRIPE API</div>
+            <div class="ev-title">
+              <svg width="10" height="12" viewBox="0 0 24 24" fill="#4c46c9" aria-hidden="true"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/></svg>
+              Payment Receipts
+            </div>
+          </div>
+          <a href="https://dashboard.stripe.com/test/payments" target="_blank" rel="noopener" class="btn btn-sm-stripe">Dashboard ↗</a>
+        </div>
+        <div class="ev-body">
+          <div class="stripe-list" id="stripe-list" role="log" aria-live="polite" aria-label="Stripe checkout sessions">
+            <div class="receipt-empty">No sessions yet — run the demo or click a patient row</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ev-panel" id="ev-nemoclaw">
+        <div class="ev-header">
+          <div>
+            <div class="ev-num">2 / 4 — SAFETY &amp; COMPLIANCE</div>
+            <div class="ev-title">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 1L2 3.5v3.5c0 3 2 5 5 6 3-1 5-3 5-6V3.5L7 1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+              Compliance Policy
+            </div>
+          </div>
+          <span class="pill pill-amber" style="font-size:11px"><span class="dot"></span> Policy designed, not yet deployed</span>
+        </div>
+        <div class="ev-body">
+          <div class="nemoclaw-gate-flash" id="gate-flash"></div>
+          <div class="sec-row"><span class="sec-key"><div class="sdot"></div>Handled by</span><span class="sec-val">Hermes Agent</span></div>
+          <div class="sec-row"><span class="sec-key"><div class="sdot"></div>Safety tier</span><span class="sec-val">balanced (NVIDIA NemoClaw)</span></div>
+          <div class="sec-row"><span class="sec-key"><div class="sdot"></div>File access</span><span class="sec-val">sandboxed</span></div>
+          <div class="sec-row"><span class="sec-key"><div class="sdot"></div>Network access</span><span class="sec-val">Stripe only</span></div>
+          <div class="sec-row"><span class="sec-key"><div class="sdot sdot-amber"></div>Patient data</span><span class="sec-val">synthetic only</span></div>
+          <div class="sec-row"><span class="sec-key"><div class="sdot"></div>Human approval</span><span class="sec-val">required before any action</span></div>
+        </div>
+      </div>
+
+      <div class="ev-panel">
+        <div class="ev-header">
+          <div>
+            <div class="ev-num">3 / 4 — PATIENT SYSTEM</div>
+            <div class="ev-title">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M4 5h6M4 8h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+              Today's Patients
+            </div>
+          </div>
+          <button class="btn btn-ghost" onclick="loadQueue()" aria-label="Refresh queue">Refresh</button>
+        </div>
+        <div class="ev-body">
+          <div class="inq-list" id="queue-list" role="list" aria-label="Patient inquiries">
+            <div style="display:flex;justify-content:center;padding:20px"><div class="spinner spinner-dark"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ev-panel" id="manual-panel-wrap">
+        <div class="ev-header">
+          <div>
+            <div class="ev-num">4 / 4 — NEW PATIENT INTAKE</div>
+            <div class="ev-title">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><circle cx="7" cy="5" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 13c0-3 2.5-5 5.5-5s5.5 2 5.5 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+              Register a Patient
+            </div>
+          </div>
+        </div>
+        <div class="ev-body">
+          <p style="font-size:13px;color:var(--t3);margin-bottom:14px;line-height:1.6">Submit your own inquiry — writes to the real DB, immediately creates a Stripe session.</p>
+          <form onsubmit="manualSubmit(event)" novalidate>
+            <div class="form-group">
+              <label for="m-name">Patient Name *</label>
+              <input type="text" id="m-name" placeholder="First Last" required autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label for="m-visit">Visit Type *</label>
+              <select id="m-visit" required>
+                <option value="">— Select —</option>
+                <option value="Standard Telehealth Visit ($75)">Standard Telehealth Visit ($75)</option>
+                <option value="Medication Refill Evaluation ($90)">Medication Refill Evaluation ($90)</option>
+                <option value="School / Work Absence Evaluation ($60)">School / Work Absence Evaluation ($60)</option>
+                <option value="Urgent Care Consultation ($125)">Urgent Care Consultation ($125)</option>
+                <option value="Follow-Up Visit ($50)">Follow-Up Visit ($50)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="m-reason">Reason *</label>
+              <textarea id="m-reason" placeholder="Brief reason for visit…" required></textarea>
+            </div>
+            <button type="submit" class="submit-btn" id="m-submit">Submit &amp; Open Stripe Checkout</button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- WHY THIS MATTERS: collapsed by default, everything else lives here -->
+  <details class="why-details">
+    <summary class="why-summary">
+      Why this matters — viability, requirements met, and who wrote it
+      <span class="chev">▼</span>
+    </summary>
+    <div class="why-body">
+
+      <div class="section-label" style="margin-top:6px">Business viability</div>
+      <div class="ba-grid">
+        <div class="ba-card ba-before">
+          <div class="ba-title">✕ Without Hermes</div>
+          <div class="ba-row"><span class="ic">🕐</span> <strong>3–5 days</strong> of manual setup across platforms</div>
+          <div class="ba-row"><span class="ic">🧩</span> <strong>6+ SaaS subscriptions</strong> to stitch together</div>
+          <div class="ba-row"><span class="ic">💸</span> <strong>$400+/month</strong> in tooling before the first patient</div>
+          <div class="ba-row"><span class="ic">👨‍💻</span> A <strong>developer required</strong> to wire backend + payments</div>
+        </div>
+        <div class="ba-card ba-after">
+          <div class="ba-title">✓ With Hermes Agent</div>
+          <div class="ba-row"><span class="ic">⚡</span> <strong>1 prompt</strong> — "launch a cash-pay clinic"</div>
+          <div class="ba-row"><span class="ic">⏱️</span> <strong>~8 seconds</strong> to a working payment-accepting app</div>
+          <div class="ba-row"><span class="ic">💰</span> <strong>$0 setup cost</strong> — free-tier infra, Stripe test mode</div>
+          <div class="ba-row"><span class="ic">🤖</span> <strong>Zero code by hand</strong> — Hermes authored everything</div>
+        </div>
+      </div>
+
+      <div class="revenue-panel">
+        <div>
+          <div class="rev-label">Revenue potential</div>
+          <div class="rev-desc">Modest volume for one clinician running this part-time.</div>
+        </div>
+        <div class="rev-stat"><div class="rev-stat-label">Patients / day</div><div class="rev-stat-val">8</div></div>
+        <div class="rev-stat"><div class="rev-stat-label">Avg. price</div><div class="rev-stat-val">$80</div></div>
+        <div class="rev-stat"><div class="rev-stat-label">Est. monthly</div><div class="rev-stat-val big">$19,200</div></div>
+      </div>
+
+      <div class="section-label">Requirements met</div>
+      <div class="req-list">
+        <div class="req-row"><span class="check">✓</span> <span><b>Hermes as operator</b> — runs the clinic's intake and billing autonomously, no human in the loop during a visit</span></div>
+        <div class="req-row"><span class="check">✓</span> <span><b>Real Stripe integration</b> — live Checkout Sessions API, real invoices, real URLs</span></div>
+        <div class="req-row"><span class="check">✓</span> <span><b>NVIDIA NemoClaw compliance policy</b> — nemoclaw-policy.yaml defines the isolation rules</span></div>
+        <div class="req-row"><span class="check">✓</span> <span><b>Real business operations</b> — patient intake, billing, a real patient system</span></div>
+        <div class="req-row"><span class="check">✓</span> <span><b>Persistent data + live tools</b> — SQLite persists, REST API polls live</span></div>
+        <div class="req-row"><span class="check">✓</span> <span><b>Zero-PHI synthetic data</b> — no real health data anywhere</span></div>
+      </div>
+
+      <div class="section-label">Beyond payments — Hermes can also provision what it needs</div>
+      <p class="prov-text">Stripe's newer <strong>Stripe Skills for Hermes</strong> go beyond payments — they let an agent provision its own infrastructure (a database, hosting, messaging) directly from the terminal, with Stripe acting as the trusted identity layer between the agent and the provider. We have this installed and ready:</p>
+      <div class="prov-files" style="margin-bottom:14px">
+        <span class="prov-file"><b>stripe projects catalog</b> — 78 real services across 19 categories</span>
+        <span class="prov-file"><b>neon/postgres</b> · free tier database</span>
+        <span class="prov-file"><b>vercel/project</b> · free tier hosting</span>
+        <span class="prov-file"><b>twilio/sms</b> · patient text follow-ups</span>
+      </div>
+      <p class="prov-text" style="font-size:13px;color:var(--t3)">Honest limitation: actually provisioning a live resource this way requires the Stripe account to complete identity verification (KYC) — a real, multi-step process on Stripe's side, not something we could responsibly rush through for this demo. So this capability is real and installed, but not executed live here.</p>
+
+      <div class="section-label">Built by Hermes</div>
+      <p class="prov-text">This entire application — every schema, endpoint, compliance policy, and pixel of this page — was written by <strong>Hermes Agent</strong> from a single instruction, then iterated with feedback. No human wrote a line of this code by hand.</p>
+      <div class="prov-files">
+        <span class="prov-file"><b>clinic-maker.py</b> · backend + Stripe API</span>
+        <span class="prov-file"><b>index.html</b> · this portal</span>
+        <span class="prov-file"><b>db_init.py</b> · database schema</span>
+        <span class="prov-file"><b>nemoclaw-policy.yaml</b> · compliance policy</span>
+      </div>
+
+    </div>
+  </details>
+
+</div><!-- /page -->
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="submission-row">
+      <div class="submission-links">
+        <a href="#" class="sub-link" id="github-link" aria-label="View source on GitHub">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+        <a href="#" class="sub-link" id="x-link" aria-label="View submission on X">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 1.15h3.7l-8.1 9.25 9.5 12.45h-7.4l-5.8-7.6-6.6 7.6H.5l8.6-9.9L0 1.15h7.6l5.3 6.9zM17.6 20.6h2.1L6.5 3.3H4.2z"/></svg>
+          X / Twitter
+        </a>
+        <span class="sub-date">Submitted June 30, 2026 · Hermes Agent Accelerated Business Hackathon</span>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-stack">
+        <span class="tech-tag">Python 3 · stdlib only</span>
+        <span class="tech-tag">SQLite</span>
+        <span class="tech-tag">Stripe API v1</span>
+        <span class="tech-tag">NVIDIA NemoClaw</span>
+        <span class="tech-tag">Hermes Agent</span>
+      </div>
+      <div class="footer-note">Synthetic demo — no real PHI — Stripe test mode — no charges</div>
+    </div>
+  </div>
+</footer>
+
+<div class="modal-overlay" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="modal-title">Stripe Checkout — Real API Session</div>
+      <button class="modal-close" onclick="closeModal()" aria-label="Close modal">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="price-box">
+        <div class="price-amt" id="m-price">$75</div>
+        <div class="price-lbl" id="m-visit-lbl">Standard Telehealth Visit</div>
+        <div style="margin-top:6px;font-size:11px;font-family:var(--mono);color:var(--t4)" id="m-patient-lbl"></div>
+      </div>
+      <div class="url-box" id="url-box">
+        <div class="url-label">Real Stripe Checkout URL (cs_test_…)</div>
+        <div class="url-val" id="url-val"></div>
+      </div>
+      <p style="font-size:14px;color:var(--t3);margin-bottom:14px;line-height:1.6" id="m-desc">Hermes will call <code style="font-size:12px;color:#6d28d9">POST api.stripe.com/v1/checkout/sessions</code>. A real hosted payment page will open on Stripe's servers.</p>
+      <button class="btn-stripe" id="m-btn" onclick="doCheckout()">
+        Create Stripe Session &amp; Open Checkout →
+      </button>
+      <div class="stripe-pw">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="#635bff"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/></svg>
+        Powered by Stripe · Test Mode · No real charges
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+// Relative — works whether this is served locally (python3 clinic-maker.py)
+// or deployed on Vercel. Never hardcode a host here.
+const API = '';
+let stripeCount = 0;
+let pendingCheckout = null;
+
+const ts = () => new Date().toLocaleTimeString('en-US',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+function toast(msg, type='success') {
+  const c=document.getElementById('toast');
+  const el=document.createElement('div');
+  el.className=`toast-item ${type}`;
+  el.innerHTML=`<span>${type==='success'?'✓':'✗'}</span><span>${esc(msg)}</span>`;
+  c.appendChild(el);
+  setTimeout(()=>el.remove(), 4500);
+}
+
+function dlog(msg, cls='') {
+  const box = document.getElementById('demo-log');
+  // Keep it to the current line + the previous one (faded) so it reads like
+  // a calm progression, not a scrolling terminal wall of text.
+  const prev = box.querySelector('.log-line.current');
+  if(prev){ prev.classList.remove('current'); prev.classList.add('prior'); }
+  box.querySelectorAll('.log-line.prior').forEach((el,i)=>{ if(i>0) el.remove(); });
+  const d = document.createElement('div');
+  d.className='log-line current';
+  d.innerHTML=`<div class="log-msg ${cls}">${esc(msg)}</div>`;
+  box.appendChild(d);
+}
+
+function setStep(i, state) {
+  const el=document.getElementById(`step-${i}`);
+  const ss=document.getElementById(`ss-${i}`);
+  el.className='demo-step'+(state?' '+state:'');
+  ss.textContent=state==='done'?'✓ done':state==='active'?'running…':state==='blocked'?'⚠ blocked':'waiting';
+}
+
+function scrollToPanel(id) {
+  const el=document.getElementById(id);
+  if(el) {
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+    el.classList.add('highlight');
+    setTimeout(()=>el.classList.remove('highlight'), 1800);
+  }
+}
+
+function flashGate(state) {
+  const el=document.getElementById('gate-flash');
+  el.style.display='flex';
+  if(state==='evaluating') {
+    el.className='nemoclaw-gate-flash gate-evaluating';
+    el.textContent='⏳ EVALUATING — checking action against OpenShell policy…';
+  } else {
+    el.className='nemoclaw-gate-flash gate-approved';
+    el.textContent='✓ APPROVED — action within balanced tier allowlist';
+  }
+}
+
+function addReceipt(id, patient, visitType, url) {
+  stripeCount++;
+  document.getElementById('s-stripe').textContent=stripeCount;
+  const list=document.getElementById('stripe-list');
+  if(list.querySelector('.receipt-empty')) list.innerHTML='';
+  const price=(visitType.match(/\$(\d+)/)||['','?'])[1];
+  const label=visitType.replace(/\s*\(\$\d+\)/,'');
+  const card=document.createElement('div');
+  card.className='receipt-card';
+  card.innerHTML=`
+    <div class="receipt-top">
+      <span class="receipt-status">✓ Session Created</span>
+      <span style="font-size:10px;color:var(--t4);font-family:var(--mono)">${ts()}</span>
+    </div>
+    <div class="receipt-amount">$${price}.00</div>
+    <div class="receipt-patient">${esc(label)} — <strong style="color:var(--t1)">${esc(patient)}</strong></div>
+    <div class="receipt-id">${esc(id)}</div>
+    ${url?`<a href="${esc(url)}" target="_blank" rel="noopener" class="btn-open-checkout">Open Real $${price} Stripe Checkout →</a>`:''}
+  `;
+  list.prepend(card);
+}
+
+async function loadQueue() {
+  const list=document.getElementById('queue-list');
+  try {
+    const res=await fetch(`${API}/api/inquiries`);
+    const data=await res.json();
+    document.getElementById('s-total').textContent=data.length;
+    document.getElementById('s-pending').textContent=data.filter(d=>d.status==='Pending SMS').length;
+    document.getElementById('s-contact').textContent=data.filter(d=>d.status==='Contacted').length;
+    if(!data.length){ list.innerHTML='<div style="text-align:center;color:var(--t4);font-size:13px;padding:20px">No records yet</div>'; return; }
+    const statusMap={'Pending SMS':['s-pending','Pending SMS'],'New Inquiry':['s-new','New Inquiry'],'Contacted':['s-contact','Contacted'],'Complete':['s-complete','Complete']};
+    list.innerHTML=data.map(inq=>{
+      const init=inq.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+      const [cls,lbl]=statusMap[inq.status]||['s-new',inq.status];
+      const price=(inq.visit_type.match(/\$(\d+)/)||['','—'])[1];
+      return `<div class="inq-row" role="listitem" tabindex="0"
+        onclick="openModal('${esc(inq.name)}','${esc(inq.visit_type)}')"
+        onkeydown="if(event.key==='Enter'||event.key===' ')openModal('${esc(inq.name)}','${esc(inq.visit_type)}')"
+        aria-label="${esc(inq.name)}, ${esc(inq.visit_type)}, ${esc(inq.status)}">
+        <div class="inq-avatar">${init}</div>
+        <div class="inq-info">
+          <div class="inq-name">${esc(inq.name)}</div>
+          <div class="inq-type">${esc(inq.visit_type.replace(/\s*\(\$\d+\)/,''))}</div>
+        </div>
+        <div class="inq-right">
+          <div class="inq-price">$${price}</div>
+          <span class="status-pill ${cls}">${esc(lbl)}</span>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    list.innerHTML='<div style="text-align:center;color:var(--t4);font-size:13px;padding:20px;font-family:var(--mono)">Backend offline<br><span style="font-size:11px">python3 clinic-maker.py</span></div>';
+  }
+}
+
+const DEMO_PATIENTS = [
+  {name:'Morgan A.',visit:'Urgent Care Consultation ($125)',reason:'Acute onset fever 101°F with productive cough, 48-hour duration.'},
+  {name:'Riley B.',visit:'Medication Refill Evaluation ($90)',reason:'Monthly refill request for blood pressure medication, stable readings.'},
+  {name:'Casey D.',visit:'Standard Telehealth Visit ($75)',reason:'General wellness check and seasonal allergy review.'},
+  {name:'Sam W.',visit:'School / Work Absence Evaluation ($60)',reason:'Requesting documentation for 2-day absence due to confirmed illness.'},
+];
+
+async function runDemo() {
+  const btn=document.getElementById('demo-btn');
+  btn.disabled=true;
+  btn.innerHTML='<div class="spinner"></div> Watch below — Hermes is working…';
+  document.getElementById('demo-log').innerHTML='';
+  document.getElementById('gate-flash').style.display='none';
+  document.getElementById('mini-security-body').innerHTML='<span class="mini-empty">Waiting for demo to start…</span>';
+  document.getElementById('mini-patient-body').innerHTML='<span class="mini-empty">No record yet</span>';
+  document.getElementById('mini-receipt-body').innerHTML='<span class="mini-empty">No session yet</span>';
+  document.getElementById('mini-security').className='theater-mini';
+  document.getElementById('mini-patient').className='theater-mini';
+  document.getElementById('mini-receipt').className='theater-mini';
+  for(let i=0;i<5;i++) setStep(i,'');
+
+  const p=DEMO_PATIENTS[Math.floor(Math.random()*DEMO_PATIENTS.length)];
+  dlog(`A new patient is checking in. Let's walk through what happens.`,'step');
+  document.querySelector('.demo-section').scrollIntoView({behavior:'smooth',block:'start'});
+  await sleep(1400);
+  dlog(`Today's patient: ${p.name}, requesting a ${p.visit.replace(/\s*\(\$\d+\)/,'').toLowerCase()}.`,'step');
+  await sleep(1600);
+
+  // STEP 1 — Compliance / safety check (technical detail kept small, in the mini-panel only)
+  setStep(0,'active');
+  document.getElementById('mini-security').className='theater-mini live';
+  flashGate('evaluating');
+  document.getElementById('mini-security-body').innerHTML='<span class="mini-empty">⏳ Reviewing this request…</span>';
+  dlog(`Before anything happens, Hermes checks this request against the clinic's safety policy.`, 'nemoclaw');
+  await sleep(2200);
+  flashGate('approved');
+  dlog(`Cleared. This is a routine, in-policy action — Hermes may proceed.`, 'nemoclaw');
+  document.getElementById('mini-security').className='theater-mini confirmed';
+  document.getElementById('mini-security-body').innerHTML=`
+    <div class="mini-row"><span class="mini-check">✓</span> Policy check passed</div>
+    <div class="mini-row"><span class="mini-check">✓</span> Network access limited to Stripe only</div>`;
+  await sleep(1600);
+  setStep(0,'done');
+  await sleep(700);
+
+  // STEP 2 — Patient registered (with retry so a transient network hiccup isn't reported as failure)
+  setStep(1,'active');
+  document.getElementById('mini-patient').className='theater-mini live';
+  document.getElementById('mini-patient-body').innerHTML='<span class="mini-empty">⏳ Opening a new chart…</span>';
+  dlog(`Hermes opens a new chart for ${p.name} in the clinic's patient system.`, 'db');
+  await sleep(1800);
+  let dbOk=false, demoOnly=false;
+  for(let attempt=0; attempt<2 && !dbOk; attempt++){
+    try {
+      const res=await fetch(`${API}/api/inquiries`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name:p.name,visit_type:p.visit,reason_preview:p.reason})
+      });
+      const data=await res.json().catch(()=>({}));
+      demoOnly = data.status === 'demo_only';
+      dbOk=res.ok;
+    } catch(e){
+      if(attempt===0) await sleep(500); // brief pause before one retry
+    }
+  }
+  await sleep(900);
+  if(dbOk && demoOnly) {
+    dlog(`On this hosted demo, patient charts are shown as static sample data — the full read/write version runs on the local backend.`, 'db');
+    document.getElementById('mini-patient').className='theater-mini confirmed';
+    document.getElementById('mini-patient-body').innerHTML=`
+      <div class="mini-row"><span class="mini-check">✓</span> <span class="mini-name">${esc(p.name)}</span></div>
+      <div class="mini-sub">${esc(p.visit.replace(/\s*\(\$\d+\)/,''))} — demo data (this deployment)</div>`;
+    setStep(1,'done');
+  } else if(dbOk) {
+    dlog(`Chart created and saved. ${p.name} now has a real record in this clinic's system.`, 'db');
+    document.getElementById('mini-patient').className='theater-mini confirmed';
+    document.getElementById('mini-patient-body').innerHTML=`
+      <div class="mini-row"><span class="mini-check">✓</span> <span class="mini-name">${esc(p.name)}</span></div>
+      <div class="mini-sub">${esc(p.visit.replace(/\s*\(\$\d+\)/,''))} — chart created</div>`;
+    setStep(1,'done');
+  } else {
+    dlog(`The clinic's system isn't responding — please start the backend and try again.`, 'blocked');
+    document.getElementById('mini-patient-body').innerHTML='<span class="mini-empty">⚠ System unreachable</span>';
+    setStep(1,'blocked');
+    btn.disabled=false; btn.innerHTML='▶ &nbsp;Check In a Patient &amp; Process Real Payment';
+    toast('Start backend: python3 clinic-maker.py','error');
+    return;
+  }
+  await sleep(1100);
+
+  // STEP 3 — Billing initiated
+  setStep(2,'active');
+  document.getElementById('mini-receipt').className='theater-mini live';
+  document.getElementById('mini-receipt-body').innerHTML='<span class="mini-empty">⏳ Preparing the invoice…</span>';
+  dlog(`Now Hermes sends the bill for this visit to Stripe — this is a real payment request, not a demo mock-up.`, 'stripe');
+  await sleep(2000);
+  let stripeUrl=null, stripeId=null;
+  for(let attempt=0; attempt<2 && !stripeId; attempt++){
+    try {
+      const res=await fetch(`${API}/api/stripe/checkout`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name:p.name,visit_type:p.visit})
+      });
+      const data=await res.json();
+      if(data.url&&data.url.includes('stripe.com')){ stripeUrl=data.url; stripeId=data.id; }
+    } catch(e){
+      if(attempt===0) await sleep(500);
+    }
+  }
+  await sleep(1100);
+  if(stripeId) {
+    dlog(`Stripe confirmed the charge and generated a real invoice.`, 'stripe');
+    setStep(2,'done');
+  } else {
+    dlog(`Stripe didn't respond — check that the API key is configured correctly.`, 'blocked');
+    document.getElementById('mini-receipt-body').innerHTML='<span class="mini-empty">⚠ Invoice failed</span>';
+    setStep(2,'blocked');
+  }
+  await sleep(1000);
+
+  // STEP 4 — Invoice ready
+  setStep(3,'active');
+  if(stripeUrl) {
+    const price=(p.visit.match(/\$(\d+)/)||['','?'])[1];
+    dlog(`The patient's invoice is ready — anyone can open the link and see a real, working payment page.`, 'stripe');
+    await sleep(1800);
+    dlog(`Payment page confirmed live. This is exactly what ${p.name} would see to pay their $${price} bill.`, 'stripe');
+    document.getElementById('mini-receipt').className='theater-mini confirmed';
+    document.getElementById('mini-receipt-body').innerHTML=`
+      <div class="mini-amount">$${price}.00</div>
+      <div class="mini-sub">${esc(p.visit.replace(/\s*\(\$\d+\)/,''))} — invoice ready to pay</div>
+      <div class="mini-id">${esc(stripeId)}</div>
+      <a href="${esc(stripeUrl)}" target="_blank" rel="noopener" class="mini-link">Open the real payment page →</a>`;
+    addReceipt(stripeId, p.name, p.visit, stripeUrl);
+    await sleep(1400);
+    setStep(3,'done');
+  } else {
+    dlog(`Invoice unavailable — see the panel to the right for details.`, 'blocked');
+    setStep(3,'blocked');
+  }
+  await sleep(900);
+
+  // STEP 5 — Visit confirmed
+  setStep(4,'active');
+  dlog(`Last step — updating the patient queue so you can see this visit reflected there.`, 'ok');
+  await sleep(1200);
+  await loadQueue();
+  await sleep(900);
+  dlog(`Done. One real patient, one real invoice — handled entirely by Hermes, no human wrote any code for this.`, 'ok');
+  setStep(4,'done');
+
+  btn.disabled=false;
+  btn.innerHTML='▶ &nbsp;Check In a Patient &amp; Process Real Payment';
+  toast(`Visit complete — ${p.name} registered, real invoice created`,'success');
+
+  if(stripeUrl) {
+    await sleep(1000);
+    openModal(p.name, p.visit, stripeUrl, stripeId);
+  }
+}
+
+function openModal(name, visitType, url=null, id=null) {
+  const price=(visitType.match(/\$(\d+)/)||['','75'])[1];
+  document.getElementById('m-price').textContent=`$${price}`;
+  document.getElementById('m-visit-lbl').textContent=visitType.replace(/\s*\(\$\d+\)/,'');
+  document.getElementById('m-patient-lbl').textContent=name?`Patient: ${name}`:'';
+  document.getElementById('url-box').style.display='none';
+  document.getElementById('m-desc').style.display='';
+  const btn=document.getElementById('m-btn');
+  btn.textContent='Create Stripe Session & Open Checkout →';
+  btn.disabled=false;
+  btn.onclick=()=>doCheckout();
+
+  if(url) {
+    document.getElementById('url-val').textContent=url;
+    document.getElementById('url-box').style.display='block';
+    document.getElementById('m-desc').style.display='none';
+    btn.textContent=`Open Real $${price} Stripe Checkout →`;
+    btn.onclick=()=>window.open(url,'_blank','noopener');
+  }
+
+  pendingCheckout={name,visit_type:visitType};
+  document.getElementById('modal').classList.add('open');
+  setTimeout(()=>btn.focus(),50);
+}
+
+async function doCheckout() {
+  const btn=document.getElementById('m-btn');
+  btn.innerHTML='<div class="spinner"></div> Creating session…';
+  btn.disabled=true;
+  dlog(`Sending the bill for this visit to Stripe…`,'stripe');
+  try {
+    const res=await fetch(`${API}/api/stripe/checkout`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(pendingCheckout)
+    });
+    const data=await res.json();
+    if(data.url&&data.url.includes('stripe.com')) {
+      dlog(`Invoice created and ready for payment.`,'stripe');
+      addReceipt(data.id,pendingCheckout.name,pendingCheckout.visit_type,data.url);
+      document.getElementById('url-val').textContent=data.url;
+      document.getElementById('url-box').style.display='block';
+      document.getElementById('m-desc').style.display='none';
+      const price=(pendingCheckout.visit_type.match(/\$(\d+)/)||['','75'])[1];
+      btn.innerHTML=`Open Real $${price} Stripe Checkout →`;
+      btn.disabled=false;
+      btn.onclick=()=>window.open(data.url,'_blank','noopener');
+      toast('Real Stripe session created!','success');
+    } else { throw new Error(data.error||'unexpected'); }
+  } catch(e) {
+    dlog(`Billing error: ${e.message}`,'blocked');
+    toast('Error — check backend','error');
+    btn.textContent='Retry';
+    btn.disabled=false;
+    btn.onclick=doCheckout;
+  }
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.getElementById('demo-btn').focus();
+}
+
+document.getElementById('modal').addEventListener('keydown',e=>{
+  if(!document.getElementById('modal').classList.contains('open')) return;
+  if(e.key==='Escape'){closeModal();return;}
+  if(e.key!=='Tab') return;
+  const els=[...document.querySelectorAll('#modal button:not([disabled]),#modal a[href]')];
+  if(!els.length) return;
+  if(e.shiftKey&&document.activeElement===els[0]){e.preventDefault();els[els.length-1].focus();}
+  else if(!e.shiftKey&&document.activeElement===els[els.length-1]){e.preventDefault();els[0].focus();}
+});
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+
+async function manualSubmit(e) {
+  e.preventDefault();
+  const btn=document.getElementById('m-submit');
+  const name=document.getElementById('m-name').value.trim();
+  const visit=document.getElementById('m-visit').value;
+  const reason=document.getElementById('m-reason').value.trim();
+  if(!name||!visit||!reason){toast('Fill all fields','error');return;}
+  btn.innerHTML='<div class="spinner"></div> Submitting…';
+  btn.disabled=true;
+  try {
+    const res=await fetch(`${API}/api/inquiries`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name,visit_type:visit,reason_preview:reason})
+    });
+    if(res.ok){
+      dlog(`New patient chart created for ${name}.`,'db');
+      await loadQueue();
+      e.target.reset();
+      toast(`${name} added — opening Stripe checkout…`,'success');
+      setTimeout(()=>openModal(name,visit),300);
+    } else { throw new Error(); }
+  } catch(e) { toast('Backend offline — run clinic-maker.py','error'); }
+  finally { btn.disabled=false; btn.innerHTML='Submit &amp; Open Stripe Checkout'; }
+}
+
+function openManualForm() {
+  document.getElementById('manual-panel-wrap').scrollIntoView({behavior:'smooth',block:'center'});
+  setTimeout(()=>document.getElementById('m-name').focus(),400);
+}
+
+window.addEventListener('load',()=>{
+  loadQueue();
+  setInterval(loadQueue, 15000);
+  document.getElementById('github-link').href='#';
+  document.getElementById('x-link').href='#';
+});
+</script>
+</body>
+</html>

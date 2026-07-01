@@ -1,0 +1,63 @@
+# NVIDIA NemoClaw Sandboxed Agent Security Policy
+# Target: Clinic Maker (Hermes launch operator)
+# Blueprint: hermes-secure-launch-v1
+
+version: "1.0"
+agent:
+  name: clinic-maker
+  runtime: hermes-agent
+  description: "Secure cash-pay clinic launcher operating on Stripe & Twilio mocks within an isolated container."
+
+sandbox:
+  type: openshell
+  engine: linux-landlock-seccomp
+  limits:
+    max_cpu_percent: 50
+    max_memory_mb: 512
+    max_storage_mb: 256
+    max_process_count: 10
+
+# Filesystem access boundaries under Landlock policy
+filesystem:
+  read_only:
+    - /usr/bin
+    - /usr/lib
+    - /etc/ssl/certs
+    - /app/templates
+  read_write:
+    - /app/output
+    - /app/db
+  blocked:
+    - /etc/shadow
+    - ~/.ssh
+    - ~/.hermes/auth.json
+    - /var/run/secrets/kubernetes.io
+
+# Declarative Egress Rules. All other inbound/outbound TCP/UDP routes are drop-by-default.
+network:
+  default_policy: drop
+  egress:
+    - host: api.stripe.com
+      port: 443
+      protocol: tcp
+      purpose: "Validating cash-pay deposit integration configurations and payment layouts."
+    - host: api.twilio.com
+      port: 443
+      protocol: tcp
+      purpose: "Mock follow-up text dispatcher configuration verification."
+    - host: inference.local
+      port: 8080
+      protocol: tcp
+      purpose: "Local routed inference traffic via Host OpenShell Gateway. Protects active model tokens from being accessed by sandbox commands."
+
+# Human-In-The-Loop Approval Gates
+approval_gates:
+  - tool: write_file
+    path: "/app/output/*.js"
+    action: approve_always
+    alert: "Agent is writing executable code logic."
+  - tool: payment_provision
+    gateway: stripe
+    trigger: pre-authorization
+    action: approve_always
+    alert: "Agent is requesting Stripe Checkout test-mode URL compilation."

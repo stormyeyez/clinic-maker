@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "api/stripe/checkout.py", "use": "@vercel/python" },
+    { "src": "api/inquiries.py", "use": "@vercel/python" },
+    { "src": "app/index.html", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/stripe/checkout", "dest": "api/stripe/checkout.py" },
+    { "src": "/api/inquiries", "dest": "api/inquiries.py" },
+    { "src": "/(.*)", "dest": "app/index.html" }
+  ]
+}
